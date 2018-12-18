@@ -1,0 +1,73 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+
+<dom-module id="counter-element">
+  <template>
+    <style>
+      :host {
+        display: block
+      }
+    </style>
+
+    <button on-click="incrementar">Clic!</button>
+    <p>Has hecho [[counter]] clics</p>
+
+  </template>
+
+  <script>
+    /**
+     * `counter-element` Description
+     *
+     * @summary ShortDescription.
+     * @customElement
+     * @polymer
+     * @extends {Polymer.Element}
+     */
+    class CounterElement extends Polymer.Element {
+      /**
+       * String providing the tag name to register the element under.
+       */
+      static get is() {
+        return 'counter-element';
+      }
+
+      /**
+       * Object describing property-related metadata used by Polymer features
+       */
+      static get properties() {
+        return {
+          counter: {
+            type: Number,
+            value: 0
+          }
+        };
+      }
+
+      incrementar() {
+        this.counter++;
+      }
+
+      /**
+       * Instance of the element is created/upgraded. Use: initializing state,
+       * set up event listeners, create shadow dom.
+       * @constructor
+       */
+      constructor() {
+        super();
+      }
+
+      /**
+       * Use for one-time configuration of your component after local DOM is initialized. 
+       */
+      ready() {
+        super.ready();
+
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          
+        });
+      }
+
+    }
+
+    window.customElements.define(CounterElement.is, CounterElement);
+  </script>
+</dom-module>
