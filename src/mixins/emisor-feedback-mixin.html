@@ -1,0 +1,23 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<script>
+  /* @polymerMixin */
+  EmisorFeedbackMixin = Polymer.dedupingMixin ((superclass) => {
+    return class extends superclass {
+      feedbackPositivo(msg) {
+        this.dispatchEvent(new CustomEvent('toast-message', {
+          detail: msg,
+          bubbles: true,
+          composed: true
+        }));
+      }
+      feedbackNegativo(msg) {
+        this.dispatchEvent(new CustomEvent('toast-error', {
+          detail: msg,
+          bubbles: true,
+          composed: true
+        }));
+      }
+    }
+
+  })
+</script>

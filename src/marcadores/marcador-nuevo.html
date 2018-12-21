@@ -1,0 +1,98 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+
+<dom-module id="marcador-nuevo">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block
+      }
+      
+      paper-spinner {
+        position: relative;
+        top: 8px;
+      }
+    </style>
+
+
+    <div class="card">
+      <h2>Nuevo marcador</h2>
+      
+      <paper-input label="Url" value="{{enlace.url}}"></paper-input>
+      <paper-input label="Título" value="{{enlace.titulo}}"></paper-input>
+      <paper-textarea label="Descripción" value="{{enlace.descripcion}}"></paper-textarea>
+      <div class="send">
+        <paper-button on-click="anadir" class="baccion" disabled="[[loading]]">Añadir</paper-button>
+        <paper-spinner active="[[loading]]"></paper-spinner>
+      </div>
+
+    </div>
+    
+    <iron-meta id="elmeta"></iron-meta>
+
+  </template>
+
+  <script>
+
+    class MarcadorNuevo extends Polymer.Element {
+
+      static get is() {
+        return 'marcador-nuevo';
+      }
+
+      static get properties() {
+        return {
+          enlace: {
+            type: Object,
+            value: function() {
+              return this.returnNewEnlace();
+            }
+          },
+          loading: {
+            type: Boolean,
+            value: false
+          },
+          marcadoresService: Object
+        };
+      }
+
+      ready() {
+        super.ready();
+        this.marcadoresService = this.$.elmeta.byKey('marcadoresService');
+        this.marcadoresService.addEventListener('insert-response', (e) => this.insertResponse(e));
+        this.marcadoresService.addEventListener('insert-error', (e) => this.insertError(e));
+        //////console.log('-->', this.marcadoresService);
+      }
+
+      returnNewEnlace() {
+        return {
+          url: 'http://',
+          titulo: '',
+          descripcion: ''
+        };
+      }
+
+      anadir() {
+        this.loading = true;
+        //////console.log('vamos a añadir el marcador a la base de datos', this.enlace);
+        this.marcadoresService.insert( this.enlace );
+      }
+
+      insertResponse(e) {
+        this.loading = false;
+        let enlace = this.returnNewEnlace();
+        //////console.log('enlace', enlace);
+        this.set('enlace', enlace);
+      }
+
+      insertError(e) {
+        this.loading = false;
+      }
+    }
+
+    window.customElements.define(MarcadorNuevo.is, MarcadorNuevo);
+  </script>
+</dom-module>

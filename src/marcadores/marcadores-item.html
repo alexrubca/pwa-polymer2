@@ -1,0 +1,105 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="./marcadores-item-options.html">
+<link rel="import" href="../mixins/navigate-mixin.html">
+<dom-module id="marcadores-item">
+  <template>
+    <style>
+      :host {
+        display: block
+      }
+      paper-icon-item {
+        --paper-icon-item: {
+          padding-left: 10px;
+          padding-right: 0px;
+        }
+        --paper-item-icon-width: 35px;
+        --paper-item-icon: {
+          margin-left: 0;
+          padding-left: 0;
+        }
+      }
+      
+      .deleting {
+          background-color: #f99;
+      }
+      
+    </style>
+
+    <iron-meta id="elmeta"></iron-meta>
+
+    <paper-icon-item class$="[[classItem]]">
+      <iron-icon icon="my-icons:link" slot="item-icon"></iron-icon>
+      <paper-item-body two-line>
+        <div>[[marcador.titulo]]</div>
+        <div secondary>[[marcador.url]]</div>
+      </paper-item-body>
+      <marcadores-item-options 
+        on-delete="deleteItem"
+        on-edit="editItem"
+        on-share="shareItem"
+      ></marcadores-item-options>
+    </paper-icon-item>
+
+  </template>
+
+  <script>
+
+    class MarcadoresItem extends NavigateMixin(Polymer.Element) {
+      static get is() {
+        return 'marcadores-item';
+      }
+
+      static get properties() {
+        return {
+          marcador: {
+            type: Object,
+            observer: 'marcadorChanged'
+          },
+          marcadoresService: Object,
+          classItem: {
+            type: String,
+            value: ''
+          },
+          fbApp: Object
+        };
+      }
+
+      ready() {
+        super.ready();
+        this.marcadoresService = this.$.elmeta.byKey('marcadoresService');
+        this.marcadoresService.addEventListener('delete-error', (e) => this.deleteError(e));
+        
+        this.shareService = this.$.elmeta.byKey('shareService');
+      }
+
+
+      deleteItem() {
+        this.classItem = 'deleting';
+        this.marcadoresService.delete(this.marcador.id);
+      }
+
+      editItem() {
+        this.navigateTo(`/editar/${this.marcador.id}/`);
+        //this.navigateTo('/editar/' + this.marcador.id + '/');
+      }
+
+      marcadorChanged() {
+        this.classItem = '';
+      }
+
+      deleteError(e) {
+        this.set('classItem', '');
+      }
+
+      shareItem() {
+        //this.fbApp.database().ref('marcadoresCompartidos').push(this.marcador);
+        this.shareService.share(this.marcador);
+      }
+    }
+
+    window.customElements.define(MarcadoresItem.is, MarcadoresItem);
+  </script>
+</dom-module>

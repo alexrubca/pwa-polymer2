@@ -1,0 +1,167 @@
+<link rel="import" href="../../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/app-storage/app-localstorage/app-localstorage-document.html">
+
+<link rel="import" href="../mixins/emisor-feedback-mixin.html">
+
+<dom-module id="user-service">
+  <template>  
+    
+    <iron-meta key="userService" id="elmeta"></iron-meta>
+    <app-localstorage-document id="eltokenstorage" key="token" data="{{token}}"></app-localstorage-document>
+    <app-localstorage-document id="eluserstorage" key="user" data="{{emailUser}}"></app-localstorage-document>
+
+    <iron-ajax
+      id="elajaxregister"
+      url="https://fake.desarrolloweb.es/sign-in"
+      method="post"
+      content-type="application/json"
+      loading="{{loading}}"
+      on-response="signInResponse"
+      on-error="signInError"
+    ></iron-ajax> 
+
+    <iron-ajax
+      id="elajaxlogin"
+      url="https://fake.desarrolloweb.es/login"
+      method="post"
+      content-type="application/json"
+      loading="{{loading}}"
+      last-response="{{token}}"
+      on-response="loginResponse"
+      on-error="loginError"
+    ></iron-ajax> 
+
+    <iron-ajax
+      id="elajaxverify"
+      url="https://fake.desarrolloweb.es/verify"
+      method="get"
+      on-response="verifyResponse"
+      on-error="verifyError"
+      last-response="{{verifyObject}}"
+    ></iron-ajax>
+
+  </template>
+
+  <script>
+
+    class UserService extends EmisorFeedbackMixin(Polymer.Element) {
+
+      static get is() {
+        return 'user-service';
+      }
+
+      static get properties() {
+        return {
+          token: {
+            type: String,
+            observer: 'tokenChanged'
+          },
+          loading: {
+            type: Boolean,
+            value: false
+          },
+          loggedIn: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+          loginProcessStarted: {
+            type: Boolean,
+            value: false
+          },
+          emailUser: {
+            type: String,
+            value: ''
+          },
+          verifyObject: Object
+        };
+      }
+
+      ready() {
+        super.ready();
+        this.$.elmeta.value = this;
+      }
+
+      // MÉTODOS PROCESO DE REGISTRO
+      signIn(user) {
+        //console.log('user-service signIn');
+        this.$.elajaxregister.body = user;
+        this.$.elajaxregister.generateRequest();
+      }
+      signInResponse(e) {
+        //console.log('signInResponse');     
+        this.feedbackPositivo('Realizado Registro');        
+        this.dispatchEvent(new CustomEvent('sign-in-response'));
+      }
+      signInError(e) {
+        //console.log('signInError');             
+        this.feedbackNegativo('No se ha podido realizar el registro');
+        this.dispatchEvent(new CustomEvent('sign-in-error'));
+      }
+
+      // MÉTODOS PROCESO DE LOGIN
+      login(user) {
+        //console.log('user-service login');        
+        this.$.elajaxlogin.body = user;
+        this.emailUser = user.email;
+        this.$.elajaxlogin.generateRequest();
+        this.loginProcessStarted = true;
+      }
+
+      loginResponse(e) {
+        //console.log('loginResponse', this.token);
+        this.loggedIn = true;   
+        this.feedbackPositivo('Realizado login');        
+        this.loginProcessStarted = false;
+        this.dispatchEvent(new CustomEvent('login-response'));
+      }
+      loginError(e) {
+        let msg;            
+        if(e.detail.request.status == 401) {
+          msg = 'Error: no autorizado';
+        } else {
+          msg = 'Error en el login';
+        }
+        this.feedbackNegativo(msg);
+        this.loginProcessStarted = false;        
+        this.dispatchEvent(new CustomEvent('login-error'));
+      }
+
+      logout() {
+        this.feedbackPositivo('Cerrando sesión');        
+        this.loggedIn = false;
+        this.token = '';
+        this.emailUser = '';
+      }
+      
+      tokenChanged(token) {
+        if(token && !this.loginProcessStarted) {
+          this.$.elajaxverify.headers = {
+            token: this.token
+          };
+          this.$.elajaxverify.generateRequest();
+        }
+      }
+      verifyError() {
+        this.loggedIn = false;
+        this.token = '';
+        this.emailUser = '';        
+      }
+      verifyResponse() {
+        //console.log('token verificado');
+        this.loggedIn = true;
+        //console.log(this.verifyObject);
+        this.emailUser = this.verifyObject.email;
+        this.dispatchEvent(new CustomEvent('login-response'));
+      }
+
+      getEmailFirebaseKey() {
+        return this.emailUser.split('.').join('+dot+');
+      }
+    }
+
+    window.customElements.define(UserService.is, UserService);
+  </script>
+</dom-module>
