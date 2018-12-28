@@ -14,7 +14,7 @@
 
     <iron-ajax
       id="elajaxregister"
-      url="https://fake.desarrolloweb.es/sign-in"
+      url="http://localhost:3333/sign-in"
       method="post"
       content-type="application/json"
       loading="{{loading}}"
@@ -24,7 +24,7 @@
 
     <iron-ajax
       id="elajaxlogin"
-      url="https://fake.desarrolloweb.es/login"
+      url="http://localhost:3333/login"
       method="post"
       content-type="application/json"
       loading="{{loading}}"
@@ -35,7 +35,7 @@
 
     <iron-ajax
       id="elajaxverify"
-      url="https://fake.desarrolloweb.es/verify"
+      url="http://localhost:3333/verify"
       method="get"
       on-response="verifyResponse"
       on-error="verifyError"
